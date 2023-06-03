@@ -1,3 +1,1 @@
-
-
-
+static bool verifyCheckSum(const char* data);
