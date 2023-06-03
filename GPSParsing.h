@@ -1,3 +1,4 @@
+#include <stdbool.h>
 typedef struct {
     double latitude;
     double longitude;
@@ -6,5 +7,5 @@ typedef struct {
     int second;
 } GPSData;
 
-static unsigned char calculate_checksum(const char *data);
+unsigned char calculate_checksum(const char *data);
 bool parse_gps_data(const char *gps_string, GPSData *data);
