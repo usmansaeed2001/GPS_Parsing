@@ -4,7 +4,8 @@
 #include <string.h>
 
 // Function to calculate the NMEA checksum
-static unsigned char calculate_checksum(const char *data) {
+static unsigned char calculate_checksum(const char *data) 
+{
     unsigned char checksum = 0;
     int i;
     for (i = 0; i < strlen(data); i++) {
@@ -14,47 +15,52 @@ static unsigned char calculate_checksum(const char *data) {
     }
     return checksum;
 }
-
-gps_data_t parseGPS(const char *data)
-{
-    gps_data_t parsedData;
-
-    //CheckSum verification
-    if (!(verifyCheckSum(data))) {
-        parsedData.isValid = false;
-    }
-    
-    //Check empty String
-    if (data == NULL || *data == '\0' || *data == '\n') {
-        parsedData.isValid = false;
+// Function to parse the GPS data string
+void parse_gps_data(const char *gps_string, GPSData *data) {
+    if (strlen(gps_string) == 0 || gps_string[0] != '$') {
+        // Invalid or empty string
+        return;
     }
 
-    //Ignore the first character
-    data++;
+    // Validate checksum
+    unsigned char checksum = calculate_checksum(gps_string);
+    char checksum_str[3];
+    strncpy(checksum_str, gps_string + strlen(gps_string) - 2, 2);
+    checksum_str[2] = '\0';
+    unsigned char received_checksum = (unsigned char)strtol(checksum_str, NULL, 16);
+    if (checksum != received_checksum) {
+        // Invalid checksum
+        return;
+    }
 
-    // Split the message into fields
-    char *fields[15];
-    int fieldCount = 0;
-    char *token = strtok((char *)data, ",");
-    
-    while (token != NULL && fieldCount < 15) {
-        fields[fieldCount] = token;
-        fieldCount++;
+    // Extract individual parameters from GGA sentence
+    char *token;
+    char *data_copy = strdup(gps_string);  // Create a copy of the string to avoid modifying the original
+    token = strtok(data_copy, ",");
+    int count = 0;
+    while (token != NULL && count < 14) {
+        if (count == 2) {
+            // Latitude
+            double latitude = strtod(token, NULL);
+            data->latitude = latitude;
+        } else if (count == 4) {
+            // Longitude
+            double longitude = strtod(token, NULL);
+            data->longitude = longitude;
+        } else if (count == 1) {
+            // Time
+            double time = strtod(token, NULL);
+            int hour = (int)(time / 10000);
+            int minute = (int)((time - hour * 10000) / 100);
+            int second = (int)(time - hour * 10000 - minute * 100);
+            data->hour = hour;
+            data->minute = minute;
+            data->second = second;
+        }
+
         token = strtok(NULL, ",");
-    }
-    // Check if the required fields are present
-    if (fieldCount < 15 || strncmp(fields[0], "GPGGA", 5) != 0) {
-        parsedData.isValid = false;  // Wrong string or missing parameters
+        count++;
     }
 
-    //Display the error message and return
-    if (!(parsedData.isValid)) {
-        printf("Invalid Data");
-        return parsedData;
-    }
-
-    // Copy individual data parameters to the struct
-    strncpy(parsedData->time, fields[0], 9);
-
-
+    free(data_copy);
 }
