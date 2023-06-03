@@ -3,27 +3,16 @@
 #include "GPSParsing.h"
 #include <string.h>
 
-static bool verifyCheckSum(const char* data)
-{
-    //Expected CheckSum
-    unsigned char expectedCheckSum;
-    //Calculated CheckSum
-    unsigned char CheckSum = 0;
-
-    // Skip the leading '$' character
-    data++;
-
-    // Calculate expected checksum
-    sscanf(data, "%*[^*]*%hhx", &expectedCheckSum);
-
-    // XOR all characters until '*' or '\0' is encountered
-    while (*data && *data != '*') {
-        CheckSum ^= *data;
-        data++;
+// Function to calculate the NMEA checksum
+unsigned char calculate_checksum(const char *data) {
+    unsigned char checksum = 0;
+    int i;
+    for (i = 0; i < strlen(data); i++) {
+        if (data[i] == '*')
+            break;
+        checksum ^= data[i];
     }
-
-    // Compare expected and actual checksums
-    return CheckSum == expectedCheckSum;
+    return checksum;
 }
 
 gps_data_t parseGPS(const char *data)
