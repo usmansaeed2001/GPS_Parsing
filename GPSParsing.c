@@ -4,7 +4,7 @@
 #include <string.h>
 
 // Function to calculate the NMEA checksum
-unsigned char calculate_checksum(const char *data) {
+static unsigned char calculate_checksum(const char *data) {
     unsigned char checksum = 0;
     int i;
     for (i = 0; i < strlen(data); i++) {

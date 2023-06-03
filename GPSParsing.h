@@ -1,10 +1,10 @@
 typedef struct {
-    int time;
     double latitude;
     double longitude;
-    double altitude;
-    bool isValid;
-} gps_data_t;
+    int hour;
+    int minute;
+    int second;
+} GPSData;
 
-static bool verifyCheckSum(const char* data);
+static unsigned char calculate_checksum(const char *data);
 gps_data_t parseGPS(const char *data);
