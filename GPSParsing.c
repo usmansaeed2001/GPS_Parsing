@@ -17,10 +17,10 @@ static unsigned char calculate_checksum(const char *data)
     return checksum;
 }
 // Function to parse the GPS data string
-void parse_gps_data(const char *gps_string, GPSData *data) {
+bool parse_gps_data(const char *gps_string, GPSData *data) {
    if (strlen(gps_string) == 0 || gps_string[0] != '$') {
         // Invalid or empty string
-        return;
+        return false;
     }
 
     // Validate checksum
@@ -31,7 +31,7 @@ void parse_gps_data(const char *gps_string, GPSData *data) {
     unsigned char received_checksum = (unsigned char)strtol(checksum_str, NULL, 16);
     if (checksum != received_checksum) {
         // Invalid checksum
-        return;
+        return false;
     }
 
     // Find the GGA sentence in the string
@@ -39,7 +39,7 @@ void parse_gps_data(const char *gps_string, GPSData *data) {
     const char *gga_start = strstr(gps_string, gga_prefix);
     if (gga_start == NULL) {
         // GGA sentence not found
-        return;
+        return false;
     }
 
     // Skip the GGA prefix and tokenize the rest of the sentence
@@ -51,7 +51,6 @@ void parse_gps_data(const char *gps_string, GPSData *data) {
         if (count == 0) {
             // Time
             double time = strtod(token, NULL);
-            printf("%f\n", time);
             int hour = (int)(time / 10000);
             int minute = (int)((time - hour * 10000) / 100);
             int second = (int)(time - hour * 10000 - minute * 100);
@@ -67,9 +66,10 @@ void parse_gps_data(const char *gps_string, GPSData *data) {
             if (token != NULL && strcmp(token, "S") == 0) {
                 data->latitude *= -1;
             }
-        } else if (count == 4) {
+        } else if (count == 2) {
             // Longitude
             double longitude = strtod(token, NULL);
+           
             data->longitude = longitude / 100;
             token = strtok(NULL, ",");
             if (token != NULL && strcmp(token, "S") == 0) {
@@ -80,6 +80,7 @@ void parse_gps_data(const char *gps_string, GPSData *data) {
         token = strtok(NULL, ",");
         count++;
     }
+    return true;
 
     free(gga_data);
 }

@@ -7,4 +7,4 @@ typedef struct {
 } GPSData;
 
 static unsigned char calculate_checksum(const char *data);
-void parse_gps_data(const char *gps_string, GPSData *data);
+bool parse_gps_data(const char *gps_string, GPSData *data);
