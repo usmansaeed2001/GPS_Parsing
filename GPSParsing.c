@@ -66,15 +66,6 @@ gps_data_t parseGPS(const char *data)
 
     // Copy individual data parameters to the struct
     strncpy(parsedData->time, fields[0], 9);
-    
 
-}
 
-void main() 
-{
-    const char *nmeaString = "$GPGGA,123519,4807.038,N,01131.000,E,1,08,0.9,545.4,M,46.9,M,,*47";
-    gps_data_t Data = parseGPS(nmeaString);
-    if(Data.isValid) {
-        printf("Reahh");
-    }
 }
