@@ -83,14 +83,3 @@ void parse_gps_data(const char *gps_string, GPSData *data) {
 
     free(gga_data);
 }
-
-void main(void) {
-    const char *gps_string = "$GPGGA,121519.00,3723.465877,N,12202.321522,W,1,08,1.0,42.686,M,-32.555,M,01,0000*62";
-
-    GPSData data;
-    parse_gps_data(gps_string, &data);
-
-    printf("Latitude: %.6f\n", data.latitude);
-    printf("Longitude: %.6f\n", data.longitude);
-    printf("Time: %02d:%02d:%02d\n", data.hour, data.minute, data.second);
-}
