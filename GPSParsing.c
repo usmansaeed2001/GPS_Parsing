@@ -3,9 +3,7 @@
 #include "GPSParsing.h"
 
 typedef struct {
-    int hours;
-    int minutes;
-    int seconds;
+    int time;
     double latitude;
     double longitude;
     double altitude;
@@ -33,4 +31,28 @@ static bool verifyCheckSum(const char* data)
 
     // Compare expected and actual checksums
     return CheckSum == expectedCheckSum;
+}
+
+gps_data_t parseGPS(const char *data)
+{
+    gps_data_t parsedData;
+
+    //CheckSum verification
+    if (verifyCheckSum(data)) {
+        parsedData->isValid = true;
+    }
+    else {
+        parsedData->isValid = false;
+    }
+
+    //Check empty String
+    if (data == NULL || *data == '\0' || *data == '\n') {
+        parsedData->isValid = false;
+    }
+
+    //Ignore the first character
+    data++;
+
+
+
 }
