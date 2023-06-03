@@ -2,22 +2,23 @@
 #include <stdbool.h>
 #include "GPSParsing.h"
 #include <string.h>
+#include <stdlib.h>
 
 // Function to calculate the NMEA checksum
 static unsigned char calculate_checksum(const char *data) 
 {
+    data++;
     unsigned char checksum = 0;
-    int i;
-    for (i = 0; i < strlen(data); i++) {
-        if (data[i] == '*')
-            break;
-        checksum ^= data[i];
+
+    while (*data && *data != '*') {
+        checksum ^= *data;
+        data++;
     }
     return checksum;
 }
 // Function to parse the GPS data string
 void parse_gps_data(const char *gps_string, GPSData *data) {
-    if (strlen(gps_string) == 0 || gps_string[0] != '$') {
+   if (strlen(gps_string) == 0 || gps_string[0] != '$') {
         // Invalid or empty string
         return;
     }
@@ -33,34 +34,63 @@ void parse_gps_data(const char *gps_string, GPSData *data) {
         return;
     }
 
-    // Extract individual parameters from GGA sentence
+    // Find the GGA sentence in the string
+    const char *gga_prefix = "$GPGGA";
+    const char *gga_start = strstr(gps_string, gga_prefix);
+    if (gga_start == NULL) {
+        // GGA sentence not found
+        return;
+    }
+
+    // Skip the GGA prefix and tokenize the rest of the sentence
     char *token;
-    char *data_copy = strdup(gps_string);  // Create a copy of the string to avoid modifying the original
-    token = strtok(data_copy, ",");
+    char *gga_data = strdup(gga_start + strlen(gga_prefix));
+    token = strtok(gga_data, ",");
     int count = 0;
     while (token != NULL && count < 14) {
-        if (count == 2) {
-            // Latitude
-            double latitude = strtod(token, NULL);
-            data->latitude = latitude;
-        } else if (count == 4) {
-            // Longitude
-            double longitude = strtod(token, NULL);
-            data->longitude = longitude;
-        } else if (count == 1) {
+        if (count == 0) {
             // Time
             double time = strtod(token, NULL);
+            printf("%f\n", time);
             int hour = (int)(time / 10000);
             int minute = (int)((time - hour * 10000) / 100);
             int second = (int)(time - hour * 10000 - minute * 100);
             data->hour = hour;
             data->minute = minute;
             data->second = second;
+        } else if (count == 1) {
+            // Latitude
+           // Latitude
+            double latitude = strtod(token, NULL);
+            data->latitude = latitude / 100;
+            token = strtok(NULL, ",");
+            if (token != NULL && strcmp(token, "S") == 0) {
+                data->latitude *= -1;
+            }
+        } else if (count == 4) {
+            // Longitude
+            double longitude = strtod(token, NULL);
+            data->longitude = longitude / 100;
+            token = strtok(NULL, ",");
+            if (token != NULL && strcmp(token, "S") == 0) {
+                data->longitude *= -1;
+            }
         }
 
         token = strtok(NULL, ",");
         count++;
     }
 
-    free(data_copy);
+    free(gga_data);
+}
+
+void main(void) {
+    const char *gps_string = "$GPGGA,121519.00,3723.465877,N,12202.321522,W,1,08,1.0,42.686,M,-32.555,M,01,0000*62";
+
+    GPSData data;
+    parse_gps_data(gps_string, &data);
+
+    printf("Latitude: %.6f\n", data.latitude);
+    printf("Longitude: %.6f\n", data.longitude);
+    printf("Time: %02d:%02d:%02d\n", data.hour, data.minute, data.second);
 }
