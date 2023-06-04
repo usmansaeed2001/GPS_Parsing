@@ -1,4 +1,6 @@
 #include <stdbool.h>
+
+//Struct to store individual parameters of GPS Data
 typedef struct {
     double latitude;
     double longitude;
