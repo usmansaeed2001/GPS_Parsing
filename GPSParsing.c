@@ -59,7 +59,6 @@ bool parse_gps_data(const char *gps_string, GPSData *data)
              data->minute = minute;
              data->second = second;
          } else if (count == 1) {
-             // Latitude
             // Latitude
              double latitude = strtod(token, NULL);
              data->latitude = latitude / 100;
@@ -82,6 +81,5 @@ bool parse_gps_data(const char *gps_string, GPSData *data)
          count++;
      }
      return true;
- 
      free(gga_data);
 }
