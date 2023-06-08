@@ -80,6 +80,6 @@ bool parse_gps_data(const char *gps_string, GPSData *data)
          token = strtok(NULL, ",");
          count++;
      }
-     return true;
      free(gga_data);
+     return true;
 }
